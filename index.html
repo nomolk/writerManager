@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <title>Writer Manager</title>
+</head>
+<body>
+  <main role="main">
+    
+    <div class="jumbotron">
+      <div class="container" id="titleBar">
+            <h1>げんこうかんり</h1>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row" id="comingEvents" v-show="showInfo">
+        <div class="col-xs-12 col-sm-6 col-md-6">
+          <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-6">
+              <ul class="list-group">
+                <a href="#" class="list-group-item list-group-item-action header" @click="showInfo = !showInfo">今日の記事</a>
+                <li class="list-group-item" v-for="(t, i) in orderedTodaysArticles" v-bind:key="t.id">
+                  {{t.summary}}
+                </li>
+              </ul>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-6">
+              <ul class="list-group">
+                <a href="#" class="list-group-item list-group-item-action header" @click="showInfo = !showInfo">明日の記事</a>
+                <li class="list-group-item" v-for="(t, i) in orderedTomorrowsArticles" v-bind:key="t.id">
+                    {{t.summary}}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-6 col-md-6">
+          <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-6">
+              <ul class="list-group">
+                <a href="#" class="list-group-item list-group-item-action header" @click="showInfo = !showInfo">今日の予定</a>
+                <li class="list-group-item" v-for="(t, i) in orderedTodaysSchedules" v-bind:key="t.id">
+                  [{{t.date | dateToStr}}] {{t.summary}}
+                </li>
+              </ul>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-6">
+              <ul class="list-group">
+                <a href="#" class="list-group-item list-group-item-action header" @click="showInfo = !showInfo">明日の予定</a>
+                <li class="list-group-item" v-for="(t, i) in orderedTomorrowsSchedules" v-bind:key="t.id">
+                    [{{t.date | dateToStr}}] {{t.summary}}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" id="deadlineList" v-show="deadlines.length > 0">
+        <div class="col-xs-8 col-sm-6 col-md-4" v-for="(t, i) in orderedDeadlines" v-bind:key="t.id">
+          <div class="cards" v-bind:class="[ { within1Week: t.isWithin1Week }, { within1Day: t.isWithin1Day && t.status != '3' }, { exclude: t.status == '4' }]">
+            <div class="row" id="deadlineList">
+              <div class="col-xs-7 col-sm-7 col-md-7">
+                <h3>{{t.deadlineDate | dateToStr}}<span v-show="t.deadlineDate.getTime() == today.getTime()" class="deadlineIsToday"> 今日</span><span v-show="t.deadlineDate < today" class="deadlineHasPassed"> 超過</span></h3>
+                <p><span class="writerName">{{t.writerIndex | writerName}}</span></p>
+              </div>
+              <div class="rightParts col-xs-5 col-sm-5 col-md-5">
+                <div class="checkDeadlineAnnounced checkbox">
+                  <label><input type="checkbox" id="hasDeadlineAnnounced" v-model="t.hasDeadlineAnnounced" @change="update(i)"> 締切つたえた</label>
+                </div>
+                <p>
+                  <span v-show="t.publishDate">{{t.publishDate | dateToStr}} 掲載</span>
+                  <span v-show="!t.publishDate" class="gray">掲載日は未定</span>
+                  <br />
+                  <span v-if="t.deadlineType === 0" class="red">締切日より</span>
+                  <span v-if="t.deadlineType === 1" class="blue">掲載日より</span>
+                </p>
+              </div>
+            </div>
+            <div class="form-group">
+              <textarea v-model="t.summary" placeholder="記事ネタ" @change="update(i)" class="form-control"></textarea>
+            </div>
+            <div class="form-group">
+              <select v-model="t.status" @change="update(i)" class="form-control">
+                <option disabled value=""></option>
+                <option value="0">{{ 0 | statusStr }}</option>
+                <option value="1">{{ 1 | statusStr }}</option>
+                <option value="2">{{ 2 | statusStr }}</option>
+                <option value="3">{{ 3 | statusStr }}</option>
+                <option value="4">{{ 4 | statusStr }}</option>
+              </select>
+              <span class="saveStatus" v-show="t.saveStatus == 1">保存中…</span>
+              <span class="saveStatus" v-show="t.saveStatus == 2">保存しました</span>
+              <span class="saveStatus" v-show="t.saveStatus == 0">&nbsp;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr>
+        
+      <!--Add buttons to initiate auth sequence and sign out-->
+      <button id="authorize-button" class="btn btn-secondary btn-sm" style="display: none;">ここを押してGoogleカレンダーを認証してください</button>
+      <button id="signout-button" class="btn btn-secondary btn-sm" style="display: none;">Googleカレンダーの認証を解除する</button>
+      </p>
+
+      <div id="rawData">
+        <button @click="isVisible=!isVisible" class="btn btn-secondary btn-sm" data-toggle="button" aria-pressed="false" autocomplete="off">生データを見る（デバッグ用）</button>
+        <div v-show="isVisible">
+          <p v-html="list"></p>
+        </div>
+      </div>
+
+      <footer>
+      </footer>
+    </div> <!-- /container -->
+
+  </main>
+
+
+  <script src="./js/config.js"></script>
+  <script src="./js/calendar.js"></script>
+  <script src="./js/wm.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script>
+    handleClientLoad();
+  </script>
+</body>
+</html>

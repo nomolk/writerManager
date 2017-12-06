@@ -1,0 +1,89 @@
+:root {
+  --color-bg: #ffffff;
+  --color-light: #DCEDC8;
+  --color-middle: #c9ec9d;
+  --color-dark: rgb(122, 170, 64);
+}
+
+body{
+  background-color: var(--color-bg);
+  font-size: 14px;
+}
+
+textarea {
+  font-size: 10px;
+}
+
+.jumbotron{
+  height: 100px;
+  background-color: var(--color-dark);
+  padding: 0px;
+}
+
+#titleBar{
+  background-color: var(--color-dark);
+  color: var(--color-bg);
+  margin-bottom: 15px;
+  text-align: center;
+  height: 100px;
+}
+#titleBar h1{
+  line-height: 100px;
+}
+#checkboxContainer{
+  text-align: right;
+}
+
+#comingEvents{
+  padding-bottom: 15px;
+  border-bottom: 1px dotted #ccc;
+  margin-bottom: 15px;
+  font-size:small;
+}
+#comingEvents a.header{
+  background-color: var(--color-light);
+  color: var(--color-dark);
+}
+
+.cards{
+  background-color: var(--color-light);
+  padding:10px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+}
+.cards .writerName{
+  font-size: 1.5em;
+}
+.cards .rightParts{
+  text-align: right;
+}
+.cards.within1Day{
+  background-color:#f54d42 !important;
+}
+.cards.within1Week{
+  background-color: var(--color-middle);
+}
+.cards.exclude{
+  background-color:#eeeeee;
+}
+.cards .deadlineHasPassed{
+  color: red;
+  font-size: 0.8em;
+}
+.cards .deadlineIsToday{
+  color: blue;
+  font-size: 0.8em;
+}
+.cards .saveStatus{
+  color: #666;
+  font-size: 0.7em;
+}
+.red{
+  color: red;
+}
+.blue{
+  color: blue;
+}
+.gray{
+  color: #999999;
+}
